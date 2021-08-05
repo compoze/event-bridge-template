@@ -4,7 +4,7 @@
 terraform {
   backend "remote" {
     hostname     = "app.terraform.io"
-    organization = "test-org-compoze"
+    organization = "${local.project_name}"
   }
 }
 
@@ -12,9 +12,9 @@ data "terraform_remote_state" "vpc" {
   backend = "remote"
 
   config = {
-    organization = "test-org-compoze"
+    organization = "${local.project_name}"
     workspaces = {
-      name = "test-org-compoze-vpc-${local.infra_environment}"
+      name = "${local.project_name}-vpc-${local.infra_environment}"
     }
   }
 }
@@ -38,7 +38,7 @@ module "eventbridge" {
   bus_name = "${var.project_name}-${var.queue_name}-${var.environment}"
 
   rules = {
-    dynamodb_events = {
+    events = {
       description   = "Capture all order data"
       event_pattern = jsonencode({ "account" : [data.aws_caller_identity.current.account_id] })
       enabled       = true
@@ -46,7 +46,7 @@ module "eventbridge" {
   }
 
   targets = {
-    dynamodb_events = concat([for receiver in var.receivers : { arn = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${receiver}"
+    events = concat([for receiver in var.receivers : { arn = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${receiver}"
       name            = "send-to-${receiver}"
       dead_letter_arn = aws_sqs_queue.deadletter_queue[receiver].arn
       }],
