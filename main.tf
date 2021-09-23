@@ -4,7 +4,7 @@
 terraform {
   backend "remote" {
     hostname     = "app.terraform.io"
-    organization = "${local.project_name}"
+    organization = "test-org-compoze"
   }
 }
 
