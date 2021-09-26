@@ -77,6 +77,8 @@ install: check-install-deps ## Download and install terraform in /usr/local/bin/
 	@rm -f /tmp/$(TF_FILENAME)
 	@sudo mv -f -v /tmp/terraform /usr/local/bin/terraform
 	@terraform -version
+	@curl -sSLo install.sh https://install.hclq.sh
+	@sh install.sh
 
 login: ## Login to the terraform cloud organization.
 	@terraform login
@@ -98,6 +100,9 @@ stage: check-run-deps set-workspace-stage generate-auto-vars ## Select the stage
 
 plan: check-workspace ## Show terraform plan for the current workspace.
 	@terraform plan
+
+add-receiver: ## Add receiver to each environment
+	cat $(ENVIRONMENT).tfvars | hclq set prepend 'receivers[]' '["$(RECEIVER)"]' -o $(ENVIRONMENT).tfvars
 
 generate-token-file:
 	scripts/create_token_file.sh

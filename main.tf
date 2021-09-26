@@ -46,14 +46,15 @@ module "eventbridge" {
   }
 
   targets = {
-    events = concat([for receiver in var.receivers : { arn = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${receiver}"
-      name            = "send-to-${receiver}"
-      dead_letter_arn = aws_sqs_queue.deadletter_queue[receiver].arn
+    events = concat([for receiver in var.receivers :
+      { arn             = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${receiver}"
+        name            = "send-to-${receiver}"
+        dead_letter_arn = aws_sqs_queue.deadletter_queue[receiver].arn
       }],
       [for receiver in var.receivers : { arn = "arn:aws:sqs:${var.region}:${data.aws_caller_identity.current.account_id}:${receiver}"
-        name                                     = "send-to-${receiver}"
-        dead_letter_arn                          = aws_sqs_queue.deadletter_queue[receiver].arn
-        message_group_id                         = "send-to-${receiver}"
+        name                                 = "send-to-${receiver}"
+        dead_letter_arn                      = aws_sqs_queue.deadletter_queue[receiver].arn
+        message_group_id                     = "send-to-${receiver}"
     }])
   }
 }
